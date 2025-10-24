@@ -1,9 +1,10 @@
-[workspace]
-
 [package]
 name = "create_doc_images"
 version = "0.1.0"
 edition = "2024"
+description = "Creates documentation plots for the akima_spline crate"
+license  = "MIT OR Apache-2.0"
 
 [dependencies]
-var_quantity = { path = "../akima_spline", version = "0.1.0"}
+akima_spline = { path = "../.."}
+plotters = "0.3.3"

@@ -21,7 +21,6 @@ pub struct AkimaSpline {
     ps: Vec<[f64; 4]>,
     extrapl: Option<Vec<f64>>,
     extrapr: Option<Vec<f64>>,
-    diff_buffer: Vec<f64>,
 }
 
 impl AkimaSpline {
@@ -45,9 +44,10 @@ impl AkimaSpline {
     where x0 is the first / last value of `xs`. The coefficient `d` is set to
     the y-value of the first / last value of `ys` to make the transition between
     inter- and extrapolation "smooth" (values of inter- and extrapolation
-    polynoms are equal at the transition point). `d` is then pushed to the end
-    of `extrapl` / `extrapr` and is therefore the last value returned from
-    [`AkimaSpline::extrapl`] / [`AkimaSpline::extrapr`] (see examples).
+    polynoms and their first derivatives are equal at the transition point).
+    `d` is then pushed to the end of `extrapl` / `extrapr` and is therefore the
+    last value returned from [`AkimaSpline::extrapl`] / [`AkimaSpline::extrapr`]
+    (see examples).
 
     # Examples
 
@@ -164,7 +164,7 @@ impl AkimaSpline {
             let m3 = ms[ii + 2];
             let m4 = ms[ii + 3];
 
-            // As described in [Aki1970] p.591 (parentheses block), this is an arbitrary
+            // As described in Akima's paper, p.591 (parentheses block), this is an arbitrary
             // convention to guarantee uniqueness of the solution
             if m1 == m2 && m3 == m4 {
                 *elem = (m2 + m3) / 2.0;
@@ -194,20 +194,6 @@ impl AkimaSpline {
             ps.push([p3, p2, p1, p0]);
         }
 
-        // The differentiation buffer is the largest of the values extrapl.len(),
-        // extrapr.len(), ps[0].len() = 4:
-        let mut buf_len = 4;
-        if let Some(ext) = extrapl.as_ref() {
-            if ext.len() > buf_len {
-                buf_len = ext.len();
-            }
-        }
-        if let Some(ext) = extrapr.as_ref() {
-            if ext.len() > buf_len {
-                buf_len = ext.len();
-            }
-        }
-
         // Now the spline can be constructed
         return Ok(AkimaSpline {
             xs,
@@ -215,7 +201,6 @@ impl AkimaSpline {
             ps,
             extrapl,
             extrapr,
-            diff_buffer: vec![0.0; buf_len],
         });
     }
 
@@ -358,9 +343,9 @@ impl AkimaSpline {
     }
 
     /**
-    Returns the `n`th derivative of the spline at position `x` if `x` is within
-    bounds, otherwise returns [`None`]. See [`AkimaSpline::eval`] for the
-    definition of "within bounds".
+    Returns the `diff_degree`th derivative of the spline at position `x` if `x`
+    is within bounds, otherwise returns [`None`]. See [`AkimaSpline::eval`] for
+    the definition of "within bounds".
 
     # Examples
 
@@ -380,54 +365,39 @@ impl AkimaSpline {
     assert_eq!(spline.derivative(1.5, 1).unwrap(), -1.0);
     assert_eq!(spline.derivative(1.5, 2).unwrap(), -2.0);
 
-    assert_eq!(spline.derivative(2.0, 1).unwrap(), 0.0);
+    assert_eq!(spline.derivative(2.0, 1).unwrap(), -2.0);
     assert_eq!(spline.derivative(2.0, 2).unwrap(), -2.0);
     ```
      */
-    pub fn derivative(&self, x: f64, n: usize) -> Option<f64> {
-        let mut coeff: Vec<f64>; // TODO: Use diff_buffer instead
+    pub fn derivative(&self, x: f64, diff_degree: usize) -> Option<f64> {
         let x_ref: f64;
+        let coeffs: &[f64];
         let idx = self.xs.partition_point(|&val| val <= x);
 
         // Extrapolation to the "left"
         if idx == 0 {
-            match &self.extrapl {
-                None => return None,
-                Some(extrap_vec) => {
-                    coeff = extrap_vec.clone();
-                    x_ref = self.xs[0];
-                }
-            }
+            coeffs = self.extrapl.as_ref()?.as_slice();
+            x_ref = self.xs[0];
         }
         // Extrapolation to the "right"
         else if idx == self.xs.len() {
             // SAFETY: xs is guaranteed to have at least one value
-            let last_x_val = *unsafe { self.xs.get_unchecked(self.xs.len() - 1) };
-            if x > last_x_val {
-                match &self.extrapr {
-                    // Quadratic extrapolation of x4 and x5
-                    None => return None,
-                    // Calculate the extrapolation values with the extrapolation vector
-                    Some(extrap_vec) => {
-                        coeff = extrap_vec.clone();
-                        x_ref = last_x_val;
-                    }
-                }
+            let x_check = *unsafe { self.xs.get_unchecked(self.xs.len() - 1) };
+            if x > x_check {
+                coeffs = self.extrapr.as_ref()?;
+                x_ref = x_check;
             } else {
                 // SAFETY: ps has at least one element (this is assured in the constructor)
-                coeff = unsafe { self.ps.get_unchecked(self.ps.len() - 1) }.to_vec();
-                x_ref = last_x_val;
+                coeffs = unsafe { self.ps.get_unchecked(self.ps.len() - 1) };
+                x_ref = *unsafe { self.xs.get_unchecked(idx - 2) };
             }
         } else {
-            // Derivative calculation as described in https://en.wikipedia.org/wiki/B-spline#Derivative_expressions
-            coeff = self.ps[idx - 1].to_vec();
-            x_ref = self.xs[idx - 1];
+            // SAFETY: idx is in bounds
+            coeffs = unsafe { self.ps.get_unchecked(idx - 1) }.as_slice();
+            x_ref = *unsafe { self.xs.get_unchecked(idx - 1) };
         }
 
-        // Calculate the coefficients of degree n
-        diffpoly(&mut coeff, n, 1);
-        // SAFETY: coeff has at least one element
-        return Some(unsafe { eval_polynomial(x - x_ref, &coeff).unwrap_unchecked() });
+        return Some(derivative(coeffs, x - x_ref, diff_degree));
     }
 
     /**
@@ -525,11 +495,7 @@ enum EvalResult {
     OutOfBoundsRight,
 }
 
-fn extrapolate(
-    xs: &Vec<f64>,
-    ys: &Vec<f64>,
-    extrap: &mut Option<Vec<f64>>,
-) -> (f64, f64, f64, f64) {
+fn extrapolate(xs: &[f64], ys: &[f64], extrap: &mut Option<Vec<f64>>) -> (f64, f64, f64, f64) {
     let x1 = xs[0];
     let x2 = xs[1];
     let x3 = xs[2];
@@ -538,7 +504,7 @@ fn extrapolate(
     let y2 = ys[1];
     let y3 = ys[2];
 
-    // Extrapolate the x-coordinates of two additional datapoints with (8) from [Aki1970]
+    // Extrapolate the x-coordinates of two additional datapoints with (8) from Akima's paper
     let x4 = x3 - x1 + x2;
     let x5 = x3 - x1 + x3;
 
@@ -563,35 +529,50 @@ fn extrapolate(
     return (x4, x5, y4, y5);
 }
 
-/*
-Calculate the coefficients for the differentiated polynom.
+/**
+Calculates the `diff_degree` derivative of a polynom with the given `coeffs`
+for `x`.
 
-TODO: Make this more efficient using diff_buffer
+Example: Let coeff be [30, 5, 1].
+The corresponding polynom would be 30x^2 + 5x^1 + 1x^0
+Differentiating this polynom by x once yields:
+30*2*x^1 + 5*1*x + 1*0*x
+The corresponding coefficient vector is therefore coeff_diff = [60, 5, 0]
+The length of the coefficient vector is num_elems = 3, therefore the elements are calculated as:
+coeff_diff[0] = coeff[0]*(3-1)
+coeff_diff[1] = coeff[1]*(3-2)
+coeff_diff[2] = coeff[2]*(3-3)
 */
-fn diffpoly(coeff: &mut Vec<f64>, n: usize, counter: usize) {
-    // Calculate the new coefficients by derivating the coefficient vector in-place.
-    // Example: Let coeff be [30, 5, 1].
-    // The corresponding polynom would be 30x^2 + 5x^1 + 1x^0
-    // Differentiating this polynom by x once yields:
-    // 30*2*x^1 + 5*1*x + 1*0*x
-    // The corresponding coefficient vector is therefore coeff_diff = [60, 5, 0]
-    // The length of the coefficient vector is num_elems = 3, therefore the elements are calculated as:
-    // coeff_diff[0] = coeff[0]*(3-1)
-    // coeff_diff[1] = coeff[1]*(3-2)
-    // coeff_diff[2] = coeff[2]*(3-3)
-    let num_elems = coeff.len();
-    for (idx, elem) in coeff.iter_mut().enumerate() {
-        let val = *elem;
-        *elem = val * ((num_elems - idx - 1) as f64);
+fn derivative(coeffs: &[f64], x: f64, diff_degree: usize) -> f64 {
+    let num_coeffs = coeffs.len();
+    if diff_degree > num_coeffs {
+        return 0.0;
     }
 
-    // remove the last coefficient value
-    coeff.pop();
+    // All coefficients beyond `num_coeffs - diff_degree` will be zero and can
+    // therefore be ignored
+    let coeffs = &coeffs[..(num_coeffs - diff_degree)];
 
-    // Differentiate again, if necessary
-    if n > counter {
-        return diffpoly(coeff, n, counter + 1);
-    }
+    return coeffs
+        .iter()
+        .enumerate()
+        .map(|(idx, coeff)| {
+            let exponent = num_coeffs - idx - 1;
+
+            // Differentiate n times
+            let mut diff_coeff = coeff.clone();
+            for k in 0..diff_degree {
+                if exponent > k {
+                    let factor: f64 = (exponent - k) as f64;
+                    diff_coeff *= factor;
+                } else {
+                    diff_coeff = 0.0;
+                    break;
+                }
+            }
+            diff_coeff * x.powi((exponent - diff_degree) as i32)
+        })
+        .sum();
 }
 
 /**
@@ -680,6 +661,60 @@ mod serde_impl {
 
         fn try_from(value: Alias) -> Result<Self, Self::Error> {
             return Self::new(value.xs, value.ys, value.extrapl, value.extrapr);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_derivative() {
+        {
+            let coeffs = [30.0, 5.0, 1.0];
+            // n = 0: 30x² + 5x + 1
+            // n = 1: 60x + 5
+            // n = 2: 60
+            // n = 3: 0
+            // n = 3: 0
+
+            let x = 1.0;
+            assert_eq!(derivative(coeffs.as_slice(), x, 0), 36.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 1), 65.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 2), 60.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 3), 0.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 4), 0.0);
+
+            let x = 2.0;
+            assert_eq!(derivative(coeffs.as_slice(), x, 0), 131.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 1), 125.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 2), 60.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 3), 0.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 4), 0.0);
+        }
+
+        {
+            let coeffs = [2.0, 30.0, 5.0, 1.0];
+            // n = 0: 2x³ + 30x² + 5x + 1
+            // n = 1: 6x² + 60x + 5
+            // n = 2: 12x + 60
+            // n = 3: 12
+            // n = 3: 0
+
+            let x = 1.0;
+            assert_eq!(derivative(coeffs.as_slice(), x, 0), 38.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 1), 71.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 2), 72.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 3), 12.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 4), 0.0);
+
+            let x = 2.0;
+            assert_eq!(derivative(coeffs.as_slice(), x, 0), 147.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 1), 149.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 2), 84.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 3), 12.0);
+            assert_eq!(derivative(coeffs.as_slice(), x, 4), 0.0);
         }
     }
 }

@@ -82,88 +82,147 @@ fn test_extrapolation_test() {
 
 #[test]
 fn test_derivative_test() {
-    let xdata = vec![-0.5, 0.0, 0.5, 1.0, 1.5];
-    let ydata: Vec<f64> = xdata.clone().into_iter().map(|x: f64| x.sin()).collect();
-    let extrapl = Some(vec![1.0]); // Lin polynom
-    let extrapr = Some(vec![1.0, 0.0]); // Quadratic polynom: f(x) = 1.0*x^2 + 0.0*x^0
-    let spline = AkimaSpline::new(xdata, ydata, extrapl, extrapr).unwrap();
+    {
+        let xdata = vec![0.0, 0.5, 1.0, 1.5, 2.0];
+        let ydata = vec![1.0, 1.0, 1.0, 1.5, 2.0];
+        let spline = AkimaSpline::new(xdata, ydata, None, None).unwrap();
 
-    // Derivative from the spline itself
-    approx::assert_abs_diff_eq!(
-        spline.derivative(-0.5, 1).unwrap(),
-        0.9794255,
-        epsilon = 0.0001
-    );
+        approx::assert_abs_diff_eq!(spline.derivative(0.0, 1).unwrap(), 0.0, epsilon = 0.0001);
+        approx::assert_abs_diff_eq!(spline.derivative(0.5, 1).unwrap(), 0.0, epsilon = 0.0001);
+        approx::assert_abs_diff_eq!(spline.derivative(1.5, 1).unwrap(), 1.0, epsilon = 0.0001);
+    }
 
-    // Show continuity of the first derivative between two spline pieces
-    approx::assert_abs_diff_eq!(
-        spline.derivative(-1e-8, 1).unwrap(),
-        0.95885,
-        epsilon = 0.0001
-    );
-    approx::assert_abs_diff_eq!(
-        spline.derivative(0.0, 1).unwrap(),
-        0.95885,
-        epsilon = 0.0001
-    );
-    approx::assert_abs_diff_eq!(
-        spline.derivative(1e-8, 1).unwrap(),
-        0.95885,
-        epsilon = 0.0001
-    );
+    {
+        let xdata = vec![-0.5, 0.0, 0.5, 1.0, 1.5];
+        let ydata: Vec<f64> = xdata.clone().into_iter().map(|x: f64| x.sin()).collect();
+        let extrapl = Some(vec![1.0]); // Lin polynom
+        let extrapr = Some(vec![1.0, 0.0]); // Quadratic polynom: f(x) = 1.0*x^2 + 0.0*x^0
+        let spline = AkimaSpline::new(xdata, ydata, extrapl, extrapr).unwrap();
 
-    // First derivative on the left extrapolation side (which is known to be 1.0 from extrapl for all x <= -0.5)
-    assert_eq!(spline.derivative(-0.51, 1).unwrap(), 1.0);
-    assert_eq!(spline.derivative(-1.0, 1).unwrap(), 1.0);
+        // Derivative from the spline itself
+        approx::assert_abs_diff_eq!(
+            spline.derivative(-0.5, 1).unwrap(),
+            0.9794255,
+            epsilon = 0.0001
+        );
 
-    // Second derivative
-    approx::assert_abs_diff_eq!(
-        spline.derivative(-0.5, 2).unwrap(),
-        -0.1645956,
-        epsilon = 0.0001
-    );
+        // Show continuity of the first derivative between two spline pieces
+        approx::assert_abs_diff_eq!(
+            spline.derivative(-1e-8, 1).unwrap(),
+            0.95885,
+            epsilon = 0.0001
+        );
+        approx::assert_abs_diff_eq!(
+            spline.derivative(0.0, 1).unwrap(),
+            0.95885,
+            epsilon = 0.0001
+        );
+        approx::assert_abs_diff_eq!(
+            spline.derivative(1e-8, 1).unwrap(),
+            0.95885,
+            epsilon = 0.0001
+        );
 
-    // Third derivative
-    approx::assert_abs_diff_eq!(
-        spline.derivative(-0.5, 3).unwrap(),
-        0.493787,
-        epsilon = 0.0001
-    );
+        // First derivative on the left extrapolation side (which is known to be 1.0 from extrapl for all x <= -0.5)
+        assert_eq!(spline.derivative(-0.51, 1).unwrap(), 1.0);
+        assert_eq!(spline.derivative(-1.0, 1).unwrap(), 1.0);
 
-    // First derivative on the right extrapolation side: f(x) = 1.0*x^2 + 0.0*x^0 => f'(x) = 2.0*(2.0 - 1.5) (the 1.5 is the last x-datapoint of the spline)
-    assert_eq!(spline.derivative(2.0, 1).unwrap(), 1.0);
-    assert_eq!(spline.derivative(3.0, 1).unwrap(), 3.0); // f'(x) = 2.0*(3.0 - 1.5)
+        // Second derivative
+        approx::assert_abs_diff_eq!(
+            spline.derivative(-0.5, 2).unwrap(),
+            -0.1645956,
+            epsilon = 0.0001
+        );
 
-    // Second derivative
-    assert_eq!(spline.derivative(2.0, 2).unwrap(), 2.0);
+        // Third derivative
+        approx::assert_abs_diff_eq!(
+            spline.derivative(-0.5, 3).unwrap(),
+            0.493787,
+            epsilon = 0.0001
+        );
 
-    // Almost the same spline, but the slope of the extrapolation should be 2 this time. On the right side, no interpolation is used, hence the derivative is None.
-    let xdata = vec![-0.5, 0.0, 0.5, 1.0, 1.5];
-    let ydata: Vec<f64> = xdata.clone().into_iter().map(|x: f64| x.sin()).collect();
-    let extrapl = Some(vec![2.0]); // Lin polynom
-    let extrapr = None; // Quadratic polynom: f(x) = 1.0*x^2 + 0.0*x^0
-    let spline = AkimaSpline::new(xdata, ydata, extrapl, extrapr).unwrap();
+        // First derivative on the right extrapolation side: f(x) = 1.0*x^2 + 0.0*x^0 => f'(x) = 2.0*(2.0 - 1.5) (the 1.5 is the last x-datapoint of the spline)
+        assert_eq!(spline.derivative(2.0, 1).unwrap(), 1.0);
+        assert_eq!(spline.derivative(3.0, 1).unwrap(), 3.0); // f'(x) = 2.0*(3.0 - 1.5)
 
-    // First derivative on the left extrapolation side (which is known to be 2.0 from extrapl for all x < -0.5)
-    assert_eq!(spline.derivative(-0.6, 1).unwrap(), 2.0);
+        // Second derivative
+        assert_eq!(spline.derivative(2.0, 2).unwrap(), 2.0);
 
-    // First derivative on the right extrapolation side is known to be None
-    assert!(spline.derivative(2.0, 1).is_none());
+        // Almost the same spline, but the slope of the extrapolation should be 2 this time. On the right side, no interpolation is used, hence the derivative is None.
+        let xdata = vec![-0.5, 0.0, 0.5, 1.0, 1.5];
+        let ydata: Vec<f64> = xdata.clone().into_iter().map(|x: f64| x.sin()).collect();
+        let extrapl = Some(vec![2.0]); // Lin polynom
+        let extrapr = None; // Quadratic polynom: f(x) = 1.0*x^2 + 0.0*x^0
+        let spline = AkimaSpline::new(xdata, ydata, extrapl, extrapr).unwrap();
+
+        // First derivative on the left extrapolation side (which is known to be 2.0 from extrapl for all x < -0.5)
+        assert_eq!(spline.derivative(-0.6, 1).unwrap(), 2.0);
+
+        // First derivative on the right extrapolation side is known to be None
+        assert!(spline.derivative(2.0, 1).is_none());
+    }
 }
 
-// Now check that the spline constructor panics if given wrong inputs
 #[test]
-#[should_panic]
+fn test_first_derivative_spline_and_extrap() {
+    let xs = vec![-2.0, -1.0, -0.8, 0.25, 1.0, 2.0];
+    let ys = vec![0.0, 1.0, 2.0, -1.5, 1.0, 3.0];
+    let extrapl = vec![2.0];
+    let extrapr = vec![3.0, -2.0];
+
+    let spline = AkimaSpline::new(xs, ys, Some(extrapl), Some(extrapr)).expect("valid input data");
+
+    // Left side
+    {
+        // Compare first derivatives at the transition point - they are equal
+        assert_eq!(spline.derivative(-2.0 - 1e-8, 1).unwrap(), 2.0);
+        approx::assert_abs_diff_eq!(
+            spline.derivative(-2.0 + 1e-8, 1).unwrap(),
+            2.0,
+            epsilon = 1e-3
+        );
+
+        // The first derivative inside the spline changes rapidely
+        approx::assert_abs_diff_eq!(spline.derivative(-1.99, 1).unwrap(), 1.952, epsilon = 1e-3);
+        approx::assert_abs_diff_eq!(spline.derivative(-1.98, 1).unwrap(), 1.905, epsilon = 1e-3);
+        approx::assert_abs_diff_eq!(spline.derivative(-1.97, 1).unwrap(), 1.858, epsilon = 1e-3);
+        approx::assert_abs_diff_eq!(spline.derivative(-1.9, 1).unwrap(), 1.557, epsilon = 1e-3);
+        approx::assert_abs_diff_eq!(spline.derivative(-1.8, 1).unwrap(), 1.2, epsilon = 1e-3);
+        approx::assert_abs_diff_eq!(spline.derivative(-1.5, 1).unwrap(), 0.643, epsilon = 1e-3);
+    }
+
+    // Right side
+    {
+        // Compare first derivatives at the transition point - they are equal
+        approx::assert_abs_diff_eq!(
+            spline.derivative(2.0 - 1e-2, 1).unwrap(),
+            -1.320,
+            epsilon = 1e-3
+        );
+        approx::assert_abs_diff_eq!(
+            spline.derivative(2.0 - 1e-3, 1).unwrap(),
+            -1.429,
+            epsilon = 1e-3
+        );
+        approx::assert_abs_diff_eq!(spline.derivative(2.0, 1).unwrap(), -1.441, epsilon = 1e-3);
+        approx::assert_abs_diff_eq!(
+            spline.derivative(2.0 + 1e-3, 1).unwrap(),
+            -1.441,
+            epsilon = 1e-3
+        );
+    }
+}
+
+#[test]
 fn too_few_values() {
     let xdata = vec![0.0, 0.5, 1.0, 1.5]; // Too few input values, 5 are needed at minimum
     let ydata: Vec<f64> = xdata.clone().into_iter().map(|x: f64| x.sin()).collect();
-    AkimaSpline::new(xdata, ydata, None, None).unwrap();
+    assert!(AkimaSpline::new(xdata, ydata, None, None).is_err());
 }
 
 #[test]
-#[should_panic]
 fn ineq_length() {
     let xdata = vec![0.0, 0.5, 1.0, 1.5, 2.0]; // 5 values
     let ydata: Vec<f64> = vec![0.0, 0.5, 1.0, 1.5, 2.0, 2.5]; // 6 values
-    AkimaSpline::new(xdata, ydata, None, None).unwrap();
+    assert!(AkimaSpline::new(xdata, ydata, None, None).is_err());
 }

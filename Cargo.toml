@@ -2,7 +2,7 @@
 name = "akima_spline"
 version = "0.1.0"
 edition = "2024"
-description = "Implementation of Akima splines with optional polynomial extrapolation."
+description = "A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima spline with optional smooth extrapolation and derivative calculation"
 readme = "README.md"
 license  = "MIT OR Apache-2.0"
 repository = "https://github.com/StefanMathis/akima_spline.git"
@@ -17,7 +17,6 @@ include = [
 
 [dependencies]
 horner = "0.1.2"
-approx = "0.5.1"
 serde = { version = "1", features = ["derive", "rc"], optional = true }
 
 [features]
@@ -25,6 +24,7 @@ default = []
 serde = ["dep:serde"]
 
 [dev-dependencies]
+approx = "0.5.1"
 akima_spline = { path = ".", features = ["serde"] }
 uom = {version = "0.36", default-features = false, features = ["f64", "si", "std"]}
 serde_yaml = {version = "*"}
