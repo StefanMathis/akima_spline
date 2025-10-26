@@ -1,8 +1,8 @@
 akima_spline
 ============
 
-[`AkimaSpline`]: https://docs.rs/var_quantity/0.1.0/akima_spline/struct.AkimaSpline.html
-[`derivative`]: https://docs.rs/var_quantity/0.1.0/akima_spline/struct.AkimaSpline.html#method.derivative
+[`AkimaSpline`]: https://docs.rs/akima_spline/0.1.1/akima_spline/struct.AkimaSpline.html
+[`derivative`]: https://docs.rs/akima_spline/0.1.1/akima_spline/struct.AkimaSpline.html#method.derivative
 
 A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
 spline with optional smooth extrapolation and derivative calculation.
@@ -165,7 +165,7 @@ approx::assert_abs_diff_eq!(spline.derivative(2.0, 1).unwrap(), 0.0, epsilon=1e-
 approx::assert_abs_diff_eq!(spline.derivative(2.0 + 1e-6, 1).unwrap(), 0.0, epsilon=1e-3); // Inside spline
 ```
 
-The full documentation is available at <https://docs.rs/akima_spline/0.1.0>.
+The full documentation is available at <https://docs.rs/akima_spline/0.1.1>.
 
 # Serialization and deserialization
 
@@ -178,7 +178,7 @@ component `k`).
 
 - [makima_splines](https://crates.io/crates/makima_spline) implements the same
 algorithm from Hiroshi Akima as this crate and extrapolates using the leftmost /
-rightmost internal polynom of the spline (see their README.md)
+rightmost internal polynom of the spline (see their README.md).
 - [scirs2-interpolate](https://crates.io/crates/scirs2-interpolate) reimplements
 SciPy's interpolation module in Rust, offering Akima spline interpolation
 besides various other algorithms.
@@ -188,7 +188,7 @@ scientific computing, including Akima spline interpolation.
 # Documentation
 
 The full API documentation is available at
-[https://docs.rs/akima_spline/0.1.0/akima_spline/](https://docs.rs/akima_spline/0.1.0/akima_spline/).
+[https://docs.rs/akima_spline/0.1.1/akima_spline/](https://docs.rs/akima_spline/0.1.1/akima_spline/).
 
 The doc images are created by a second crate `docs/create_doc_images` which uses
 this crate and the awesome [plotters](https://crates.io/crates/plotters) crate.
