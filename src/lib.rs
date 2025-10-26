@@ -122,7 +122,9 @@ impl AkimaSpline {
         }
 
         // Section 2.3 from Akima's paper: Use end point and two adjacent points
-        // for extrapolation
+        // to calculate slopes "beyond" the datapoints. If no extrapolation
+        // polynom is given, a quadratic extrapolation is used. If one is given,
+        // the constant component k of the polynom is added to the polynom.
 
         // Left side
         let xs_l = [xs[2], xs[1], xs[0]];
@@ -134,6 +136,7 @@ impl AkimaSpline {
         let ys_r = [ys[xs.len() - 3], ys[xs.len() - 2], ys[xs.len() - 1]];
         let (xy, xz, yy, yz) = extrapolate(xs_r, ys_r, &mut extrapr);
 
+        // Extend the datapoint vectors xs and ys with the extrapolated points
         let mut xs_extrap: Vec<f64> = vec![0.0; xs.len() + 4];
         xs_extrap[0] = xa;
         xs_extrap[1] = xb;
@@ -152,18 +155,33 @@ impl AkimaSpline {
         }
 
         // Local segment slopes dy / dx
-        let mut ms: Vec<f64> = vec![0.0; xs_extrap.len() - 1];
-        for (ii, elem) in ms.iter_mut().enumerate() {
-            *elem = (ys_extrap[ii + 1] - ys_extrap[ii]) / (xs_extrap[ii + 1] - xs_extrap[ii]);
+        let mut ms: Vec<f64> = vec![0.0; xs.len() + 3];
+
+        let x_iter_0 = [xa, xb]
+            .into_iter()
+            .chain(xs.iter().cloned())
+            .chain([xy, xz].into_iter());
+        let x_iter_1 = x_iter_0.clone().skip(1);
+        let dx_iter = x_iter_1.zip(x_iter_0).map(|(x1, x0)| x1 - x0);
+
+        let y_iter_0 = [ya, yb]
+            .into_iter()
+            .chain(ys.iter().cloned())
+            .chain([yy, yz].into_iter());
+        let y_iter_1 = y_iter_0.clone().skip(1);
+        let dy_iter = y_iter_1.zip(y_iter_0).map(|(y1, y0)| y1 - y0);
+
+        for ((m, dx), dy) in ms.iter_mut().zip(dx_iter).zip(dy_iter) {
+            *m = dy / dx;
         }
 
         // Weighted segment slope calculation
         let mut ts: Vec<f64> = vec![0.0; xs.len()];
-        for (ii, elem) in ts.iter_mut().enumerate() {
-            let m1 = ms[ii];
-            let m2 = ms[ii + 1];
-            let m3 = ms[ii + 2];
-            let m4 = ms[ii + 3];
+        for (elem, ms_slice) in ts.iter_mut().zip(ms.windows(4)) {
+            let m1 = ms_slice[0];
+            let m2 = ms_slice[1];
+            let m3 = ms_slice[2];
+            let m4 = ms_slice[3];
 
             // As described in Akima's paper, p.591 (parentheses block), this is an arbitrary
             // convention to guarantee uniqueness of the solution
