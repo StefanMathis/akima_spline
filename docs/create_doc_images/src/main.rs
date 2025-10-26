@@ -42,7 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &spline_extrapr,
         "extrap_2",
         "left-side extrapolation (y = k)",
-        "right-side extrapolation (y = -2x⁶ + 3x⁴ -6x + k)",
+        "right-side extrapolation (y = -2x⁶ + 3x⁴ - 6x + k)",
     )?;
 
     return Ok(());
