@@ -7,7 +7,7 @@ akima_spline
 A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
 spline with optional smooth extrapolation and derivative calculation.
 
-![](docs/no_extrap.svg "Akima spline interpolation")
+![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/no_extrap.svg "Akima spline interpolation")
 
 This crate implements a 1d Akima spline as described in:
 > Akima, Hiroshi: A new method of interpolation and smooth curve fitting based on
@@ -44,7 +44,7 @@ at the transition point), the polynoms within the spline are adjusted. This can
 be clearly seen when comparing splines made from the same datapoints with and
 without extrapolation:
 
-![](docs/extrap_1.svg "Polynom-based extrapolation")
+![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_1.svg "Polynom-based extrapolation")
 
 The extrapolation polynoms can be of any degree `n` defined by the length of the
 given vector with the first value being the coefficient of the `x^n` term. The
@@ -77,7 +77,7 @@ approx::assert_abs_diff_eq!(spline.eval(2.2).expect("covered by extrapolation po
 The spline can be differentiated by an arbitrary degree at any position `x`
 using the [`derivative`] method.
 
-![](docs/extrap_2.svg "Polynom-based extrapolation derivative")
+![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_2.svg "Polynom-based extrapolation derivative")
 
 ```rust
 use akima_spline::AkimaSpline;
@@ -88,7 +88,7 @@ let ys = vec![0.0, 1.0, 2.0, -1.5, 1.0, 3.0];
 // Polynom k (constant)
 let extrapl = Some(vec![]); 
 
-// Polynom -2(x-x0)^6 + 3(x-x0)^4 - 6(x-x0) + k, where k is 3 (last ys-value) and x0 is 2 (last xs-value)
+// Polynom -2(x-x0)⁶ + 3(x-x0)⁴ - 6(x-x0) + k, where k is 3 (last ys-value) and x0 is 2 (last xs-value)
 let extrapr = Some(vec![-2.0, 0.0, 3.0, 0.0, 0.0 - 6.0]); 
 
 // Extrapolation to both sides
