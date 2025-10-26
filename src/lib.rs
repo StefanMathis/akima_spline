@@ -106,11 +106,10 @@ impl AkimaSpline {
         mut extrapr: Option<Vec<f64>>,
     ) -> Result<Self, BuildError> {
         // Sanity checks for the input data
-        let n_xs = xs.len();
-        if n_xs < 5 {
+        if xs.len() < 5 {
             return Err(BuildError::MinFivePointsNeeded);
         }
-        if n_xs != ys.len() {
+        if xs.len() != ys.len() {
             return Err(BuildError::InequalSliceLength {
                 xs_len: xs.len(),
                 ys_len: ys.len(),
@@ -122,42 +121,44 @@ impl AkimaSpline {
             return Err(BuildError::XsNotStrictlyMonotonicIncreasing);
         }
 
-        let mut xs_start = xs[0..3].to_vec();
-        xs_start.reverse();
-        let mut ys_start = ys[0..3].to_vec();
-        ys_start.reverse();
-        let (xb, xa, yb, ya) = extrapolate(&xs_start, &ys_start, &mut extrapl);
-        let (xy, xz, yy, yz) = extrapolate(
-            &xs[(n_xs - 3)..(n_xs)].to_vec(),
-            &ys[(n_xs - 3)..(n_xs)].to_vec(),
-            &mut extrapr,
-        );
+        // Section 2.3 from Akima's paper: Use end point and two adjacent points
+        // for extrapolation
 
-        let mut xs_extrap: Vec<f64> = vec![0.0; n_xs + 4];
+        // Left side
+        let xs_l = [xs[2], xs[1], xs[0]];
+        let ys_l = [ys[2], ys[1], ys[0]];
+        let (xb, xa, yb, ya) = extrapolate(xs_l, ys_l, &mut extrapl);
+
+        // Right side
+        let xs_r = [xs[xs.len() - 3], xs[xs.len() - 2], xs[xs.len() - 1]];
+        let ys_r = [ys[xs.len() - 3], ys[xs.len() - 2], ys[xs.len() - 1]];
+        let (xy, xz, yy, yz) = extrapolate(xs_r, ys_r, &mut extrapr);
+
+        let mut xs_extrap: Vec<f64> = vec![0.0; xs.len() + 4];
         xs_extrap[0] = xa;
         xs_extrap[1] = xb;
-        xs_extrap[n_xs + 2] = xy;
-        xs_extrap[n_xs + 3] = xz;
+        xs_extrap[xs.len() + 2] = xy;
+        xs_extrap[xs.len() + 3] = xz;
 
-        let mut ys_extrap: Vec<f64> = vec![0.0; n_xs + 4];
+        let mut ys_extrap: Vec<f64> = vec![0.0; xs.len() + 4];
         ys_extrap[0] = ya;
         ys_extrap[1] = yb;
-        ys_extrap[n_xs + 2] = yy;
-        ys_extrap[n_xs + 3] = yz;
+        ys_extrap[xs.len() + 2] = yy;
+        ys_extrap[xs.len() + 3] = yz;
 
-        let n_xs_extrap = xs_extrap.len();
-
-        for ii in 0..n_xs {
+        for ii in 0..xs.len() {
             xs_extrap[ii + 2] = xs[ii];
             ys_extrap[ii + 2] = ys[ii];
         }
 
-        let mut ms: Vec<f64> = vec![0.0; n_xs_extrap - 1];
+        // Local segment slopes dy / dx
+        let mut ms: Vec<f64> = vec![0.0; xs_extrap.len() - 1];
         for (ii, elem) in ms.iter_mut().enumerate() {
             *elem = (ys_extrap[ii + 1] - ys_extrap[ii]) / (xs_extrap[ii + 1] - xs_extrap[ii]);
         }
 
-        let mut ts: Vec<f64> = vec![0.0; n_xs];
+        // Weighted segment slope calculation
+        let mut ts: Vec<f64> = vec![0.0; xs.len()];
         for (ii, elem) in ts.iter_mut().enumerate() {
             let m1 = ms[ii];
             let m2 = ms[ii + 1];
@@ -175,9 +176,30 @@ impl AkimaSpline {
             }
         }
 
+        /*
+        If an extrapolation polynom is given, the weighted segment slope at
+        the respective end point is equal to the first derivative of that
+        polynom (which in turn is simply the first-degree term of the
+        polynom). If the polynom does not have a first-degree term, use the
+        previously calculated weighted slope
+        */
+        if let Some(ext) = extrapl.as_ref() {
+            if ext.len() > 1 {
+                ts[0] = ext[ext.len() - 2];
+            }
+        }
+        if let Some(ext) = extrapr.as_ref() {
+            if ext.len() > 1 {
+                // No overflow risk here, since ts has xs.len() elements and
+                // xs.len() is guaranteed to be at least 5.
+                let l = ts.len() - 1;
+                ts[l] = ext[ext.len() - 2];
+            }
+        }
+
         // Calculate the spline coefficients
-        let mut ps: Vec<[f64; 4]> = Vec::with_capacity(n_xs - 1);
-        for ii in 0..(n_xs - 1) {
+        let mut ps: Vec<[f64; 4]> = Vec::with_capacity(xs.len() - 1);
+        for ii in 0..(xs.len() - 1) {
             let x1 = xs[ii];
             let x2 = xs[ii + 1];
 
@@ -495,14 +517,9 @@ enum EvalResult {
     OutOfBoundsRight,
 }
 
-fn extrapolate(xs: &[f64], ys: &[f64], extrap: &mut Option<Vec<f64>>) -> (f64, f64, f64, f64) {
-    let x1 = xs[0];
-    let x2 = xs[1];
-    let x3 = xs[2];
-
-    let y1 = ys[0];
-    let y2 = ys[1];
-    let y3 = ys[2];
+fn extrapolate(xs: [f64; 3], ys: [f64; 3], extrap: &mut Option<Vec<f64>>) -> (f64, f64, f64, f64) {
+    let [x1, x2, x3] = xs;
+    let [y1, y2, y3] = ys;
 
     // Extrapolate the x-coordinates of two additional datapoints with (8) from Akima's paper
     let x4 = x3 - x1 + x2;
@@ -517,13 +534,14 @@ fn extrapolate(xs: &[f64], ys: &[f64], extrap: &mut Option<Vec<f64>>) -> (f64, f
             y4 = y3 + 2.0 * (x4 - x3) * (y3 - y2) / (x3 - x2) - (x4 - x3) * (y2 - y1) / (x2 - x1);
             y5 = y4 + 2.0 * (x5 - x4) * (y4 - y3) / (x4 - x3) - (x5 - x4) * (y3 - y2) / (x3 - x2);
         }
-        // Calculate the extrapolation values with the extrapolation vector
+        // Calculate the extrapolation values with the extrapolation polynom
         Some(extrap_vec) => {
             extrap_vec.push(y3);
 
-            // SAFETY: extrap_vec is guaranteed by the constructor to have at least one element
-            y4 = unsafe { eval_polynomial(x4 - x3, &extrap_vec).unwrap_unchecked() };
-            y5 = unsafe { eval_polynomial(x5 - x3, &extrap_vec).unwrap_unchecked() };
+            y4 = eval_polynomial(x4 - x3, extrap_vec.as_slice())
+                .expect("guaranteed to have at least one value");
+            y5 = eval_polynomial(x5 - x3, extrap_vec.as_slice())
+                .expect("guaranteed to have at least one value");
         }
     }
     return (x4, x5, y4, y5);

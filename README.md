@@ -1,13 +1,13 @@
 akima_spline
 ============
 
-[`AkimaSplines`]: https://docs.rs/var_quantity/0.1.0/akima_spline/struct.AkimaSpline.html
+[`AkimaSpline`]: https://docs.rs/var_quantity/0.1.0/akima_spline/struct.AkimaSpline.html
 [`derivative`]: https://docs.rs/var_quantity/0.1.0/akima_spline/struct.AkimaSpline.html#method.derivative
 
 A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
 spline with optional smooth extrapolation and derivative calculation.
 
-![](docs/readme_example_no_extrap.svg "Akima spline interpolation")
+![](docs/no_extrap.svg "Akima spline interpolation")
 
 This crate implements a 1d Akima spline as described in:
 > Akima, Hiroshi: A new method of interpolation and smooth curve fitting based on
@@ -44,13 +44,12 @@ at the transition point), the polynoms within the spline are adjusted. This can
 be clearly seen when comparing splines made from the same datapoints with and
 without extrapolation:
 
-![](docs/readme_example_extrap.svg "Polynom-based extrapolation")
+![](docs/extrap_1.svg "Polynom-based extrapolation")
 
 The extrapolation polynoms can be of any degree `n` defined by the length of the
 given vector with the first value being the coefficient of the `x^n` term. The
 constant part of the polynom is omitted, since it is inferred from the given
-datapoints. It is of course possible to extrapolate only on one side (as shown
-in the image above) or on both sides.
+datapoints.
 
 ```rust
 use akima_spline::AkimaSpline;
@@ -70,13 +69,15 @@ let spline = AkimaSpline::new(xs, ys, extrapl, extrapr).expect("valid input data
 assert_eq!(spline.eval(-2.5).expect("covered by extrapolation polynom"), -1.0);
 
 // Right-side extrapolation
-approx::assert_abs_diff_eq!(spline.eval(2.2).expect("covered by extrapolation polynom"), 2.48, epsilon=1e-3);
+approx::assert_abs_diff_eq!(spline.eval(2.2).expect("covered by extrapolation polynom"), 2.72, epsilon=1e-3);
 ```
 
 # Derivatives
 
 The spline can be differentiated by an arbitrary degree at any position `x`
-using the [`derivative`] method:
+using the [`derivative`] method.
+
+![](docs/extrap_2.svg "Polynom-based extrapolation derivative")
 
 ```rust
 use akima_spline::AkimaSpline;
@@ -84,11 +85,14 @@ use akima_spline::AkimaSpline;
 let xs = vec![-2.0, -1.0, -0.8, 0.25, 1.0, 2.0];
 let ys = vec![0.0, 1.0, 2.0, -1.5, 1.0, 3.0];
 
-// Polynom 3(x-x0)² - 2(x-x0) + k, where k is 3 (last ys-value) and x0 is 2 (last xs-value)
-let extrapr = Some(vec![3.0, -2.0]); 
+// Polynom k (constant)
+let extrapl = Some(vec![]); 
 
-// Only right-side extrapolation
-let spline = AkimaSpline::new(xs, ys, None, extrapr).expect("valid input data");
+// Polynom -2(x-x0)^6 + 3(x-x0)^4 - 6(x-x0) + k, where k is 3 (last ys-value) and x0 is 2 (last xs-value)
+let extrapr = Some(vec![-2.0, 0.0, 3.0, 0.0, 0.0 - 6.0]); 
+
+// Extrapolation to both sides
+let spline = AkimaSpline::new(xs, ys, extrapl, extrapr).expect("valid input data");
 
 // Differentiation inside the spline
 // =============================================================================
@@ -97,36 +101,75 @@ let spline = AkimaSpline::new(xs, ys, None, extrapr).expect("valid input data");
 approx::assert_abs_diff_eq!(spline.derivative(0.7, 0).unwrap(), spline.eval(0.7).unwrap(), epsilon=1e-3); 
 
 // First degree derivative
-approx::assert_abs_diff_eq!(spline.derivative(0.7, 1).unwrap(), 3.695, epsilon=1e-3);
+approx::assert_abs_diff_eq!(spline.derivative(0.7, 1).unwrap(), 3.706, epsilon=1e-3);
 
 // Second degree derivative
-approx::assert_abs_diff_eq!(spline.derivative(0.7, 2).unwrap(), -0.7, epsilon=1e-3);
+approx::assert_abs_diff_eq!(spline.derivative(0.7, 2).unwrap(), -0.903, epsilon=1e-3);
 
 // Tenth degree derivative = 0, since AkimaSpline uses a 3rd degree polynom internally
 assert_eq!(spline.derivative(0.7, 10).unwrap(), 0.0); 
 
-// Differentiation outside the spline
+// First derivative at transition points
 // =============================================================================
-
-// Differentiation to the left of the data points fails (no extrapolation defined)
-assert!(spline.derivative(-2.5, 1).is_none()); 
-
-// Differentiation to the right succeeds (simply differentiate extrapr)
-assert_eq!(spline.derivative(2.5, 1).unwrap(), -5.0); 
 
 // Derivatives near the transition points are very similar, because of the enforced
 // smoothness of the extrapolation.
-approx::assert_abs_diff_eq!(spline.derivative(1.999, 1).unwrap(), -1.43, epsilon=1e-3);
-approx::assert_abs_diff_eq!(spline.derivative(2.0, 1).unwrap(), -1.442, epsilon=1e-3);
-approx::assert_abs_diff_eq!(spline.derivative(2.0001, 1).unwrap(), -2.05, epsilon=1e-3);
 
+// Left side
+approx::assert_abs_diff_eq!(spline.derivative(-2.0 - 1e-6, 1).unwrap(), 0.0, epsilon=1e-3); // Outside spline
+approx::assert_abs_diff_eq!(spline.derivative(-2.0, 1).unwrap(), 0.0, epsilon=1e-3); // Transition point
+approx::assert_abs_diff_eq!(spline.derivative(-2.0 + 1e-6, 1).unwrap(), 0.0, epsilon=1e-3); // Inside spline
+
+// Right side
+approx::assert_abs_diff_eq!(spline.derivative(2.0 - 1e-6, 1).unwrap(), -6.0, epsilon=1e-3); // Inside spline
+approx::assert_abs_diff_eq!(spline.derivative(2.0, 1).unwrap(), -6.0, epsilon=1e-3); // Transition point
+approx::assert_abs_diff_eq!(spline.derivative(2.0 + 1e-6, 1).unwrap(), -6.0, epsilon=1e-3); // Outside spline
+```
+
+
+It is of course possible to extrapolate only on one side of the spline. One
+should note that specifying an empty extrapolation term vector is NOT equal to
+`None`, since the derivative condition is still enforced (in that case, the
+derivative at the transition point is zero).
+
+```rust
+use akima_spline::AkimaSpline;
+
+let xs = vec![-2.0, -1.0, -0.8, 0.25, 1.0, 2.0];
+let ys = vec![0.0, 1.0, 2.0, -1.5, 1.0, 3.0];
+
+
+let extrapr = Some(vec![]); // This results in constant extrapolation
+let spline = AkimaSpline::new(xs, ys, None, extrapr).expect("valid input data");
+
+// Evaluation left of the spline
+assert!(spline.eval(-2.5).is_none());
+
+// Evaluation inside the spline
+approx::assert_abs_diff_eq!(spline.eval(0.0).expect("inside spline"), -1.264, epsilon=1e-3);
+
+// Evaluation right of the spline (always equal to y-value of last datapoint,
+// because a zeroth degree polynom was defined)
+assert_eq!(spline.eval(2.5).expect("covered by extrapolation polynom"), 3.0);
+assert_eq!(spline.eval(20.0).expect("covered by extrapolation polynom"), 3.0);
+
+// At the left transition point, the "natural" derivative is calculated:
+assert!(spline.derivative(-2.0 - 1e-6, 1).is_none()); // Outside spline
+approx::assert_abs_diff_eq!(spline.derivative(-2.0, 1).unwrap(), -1.0, epsilon=1e-3); // Transition point
+approx::assert_abs_diff_eq!(spline.derivative(-2.0 + 1e-6, 1).unwrap(), -1.0, epsilon=1e-3); // Inside spline
+
+// On the right side, the derivative is forced to be zero
+// (derivative of p(x) = k is 0)
+approx::assert_abs_diff_eq!(spline.derivative(2.0 - 1e-6, 1).unwrap(), 0.0, epsilon=1e-3); // Outside spline
+approx::assert_abs_diff_eq!(spline.derivative(2.0, 1).unwrap(), 0.0, epsilon=1e-3); // Transition point
+approx::assert_abs_diff_eq!(spline.derivative(2.0 + 1e-6, 1).unwrap(), 0.0, epsilon=1e-3); // Inside spline
 ```
 
 The full documentation is available at <https://docs.rs/akima_spline/0.1.0>.
 
 # Serialization and deserialization
 
-The [`AkimaSplines`] struct can be serialized / deserialized if the `serde`
+The [`AkimaSpline`] struct can be serialized / deserialized if the `serde`
 feature is enabled. The serialized representation only stores the raw data
 `xs` and `ys` as well as the extrapolation coefficients (without constant
 component `k`).
