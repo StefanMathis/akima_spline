@@ -1,8 +1,8 @@
 akima_spline
 ============
 
-[`AkimaSpline`]: https://docs.rs/akima_spline/0.1.2/akima_spline/struct.AkimaSpline.html
-[`derivative`]: https://docs.rs/akima_spline/0.1.2/akima_spline/struct.AkimaSpline.html#method.derivative
+[`AkimaSpline`]: https://docs.rs/akima_spline/0.1.3/akima_spline/struct.AkimaSpline.html
+[`derivative`]: https://docs.rs/akima_spline/0.1.3/akima_spline/struct.AkimaSpline.html#method.derivative
 
 A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
 spline with optional smooth extrapolation and derivative calculation.
@@ -165,7 +165,7 @@ approx::assert_abs_diff_eq!(spline.derivative(2.0, 1).unwrap(), 0.0, epsilon=1e-
 approx::assert_abs_diff_eq!(spline.derivative(2.0 + 1e-6, 1).unwrap(), 0.0, epsilon=1e-3); // Inside spline
 ```
 
-The full documentation is available at <https://docs.rs/akima_spline/0.1.2>.
+The full documentation is available at <https://docs.rs/akima_spline/0.1.3>.
 
 # Serialization and deserialization
 
@@ -188,7 +188,7 @@ scientific computing, including Akima spline interpolation.
 # Documentation
 
 The full API documentation is available at
-[https://docs.rs/akima_spline/0.1.2/akima_spline/](https://docs.rs/akima_spline/0.1.2/akima_spline/).
+[https://docs.rs/akima_spline/0.1.3/akima_spline/](https://docs.rs/akima_spline/0.1.3/akima_spline/).
 
 The doc images are created by a second crate `docs/create_doc_images` which uses
 this crate and the awesome [plotters](https://crates.io/crates/plotters) crate.

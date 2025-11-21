@@ -1,4 +1,5 @@
-#![doc = include_str!("../README.md")]
+#![cfg_attr(docsrs, doc = include_str!("../README.md"))]
+#![cfg_attr(not(docsrs), doc = include_str!("../README_LOCAL.md"))]
 #![deny(missing_docs)]
 
 use horner::eval_polynomial;

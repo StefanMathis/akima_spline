@@ -25,7 +25,6 @@ fn main() {
         "{{example.svg}}",
         "https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/no_extrap.svg",
     );
-    docsrs = docsrs.replace("{{no_extrap.svg}}", "https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/no_extrap.svg");
     docsrs = docsrs.replace("{{extrap_1.svg}}", "https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_1.svg");
     docsrs = docsrs.replace("{{extrap_2.svg}}", "https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_2.svg");
     std::fs::write("README.md", docsrs).unwrap();
