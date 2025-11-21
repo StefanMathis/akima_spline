@@ -22,7 +22,7 @@ fn main() {
 
     // Generate README,md using online hosted images
     let mut docsrs = readme.replace(
-        "{{example.svg}}",
+        "{{no_extrap.svg}}",
         "https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/no_extrap.svg",
     );
     docsrs = docsrs.replace("{{extrap_1.svg}}", "https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_1.svg");
