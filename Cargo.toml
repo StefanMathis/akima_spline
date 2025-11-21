@@ -1,6 +1,6 @@
 [package]
 name = "akima_spline"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2024"
 description = "A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima spline with optional smooth extrapolation and derivative calculation"
 readme = "README.md"
