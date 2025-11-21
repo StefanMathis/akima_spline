@@ -1,3 +1,7 @@
+/*!
+This crate creates the images used in the documentation of the akima_spline crate.
+ */
+
 use akima_spline::AkimaSpline;
 use plotters::{prelude::*, style::full_palette::GREEN_800};
 
@@ -123,7 +127,7 @@ fn draw_no_extrap(
     chart
         .configure_series_labels()
         .background_style(&WHITE.mix(0.8)) // semi-transparent background
-        .border_style(&BLACK)
+        .line_style(&BLACK)
         .label_font(("sans-serif", font_size_legend))
         .position(SeriesLabelPosition::UpperLeft) // position on the chart
         .draw()?;
@@ -249,7 +253,7 @@ fn draw_extrap(
     chart
         .configure_series_labels()
         .background_style(&WHITE.mix(0.8)) // semi-transparent background
-        .border_style(&BLACK)
+        .line_style(&BLACK)
         .label_font(("sans-serif", font_size_legend))
         .position(SeriesLabelPosition::UpperLeft) // position on the chart
         .draw()?;

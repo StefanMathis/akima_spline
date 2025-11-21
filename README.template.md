@@ -1,13 +1,13 @@
 akima_spline
 ============
 
-[`AkimaSpline`]: https://docs.rs/akima_spline/0.1.2/akima_spline/struct.AkimaSpline.html
-[`derivative`]: https://docs.rs/akima_spline/0.1.2/akima_spline/struct.AkimaSpline.html#method.derivative
+[`AkimaSpline`]: https://docs.rs/akima_spline/{{VERSION}}/akima_spline/struct.AkimaSpline.html
+[`derivative`]: https://docs.rs/akima_spline/{{VERSION}}/akima_spline/struct.AkimaSpline.html#method.derivative
 
 A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
 spline with optional smooth extrapolation and derivative calculation.
 
-![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/no_extrap.svg "Akima spline interpolation")
+![]({{no_extrap.svg}} "Akima spline interpolation")
 
 This crate implements a 1d Akima spline as described in:
 > Akima, Hiroshi: A new method of interpolation and smooth curve fitting based on
@@ -44,7 +44,7 @@ at the transition point), the polynoms within the spline are adjusted. This can
 be clearly seen when comparing splines made from the same datapoints with and
 without extrapolation:
 
-![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_1.svg "Polynom-based extrapolation")
+![]({{extrap_1.svg}} "Polynom-based extrapolation")
 
 The extrapolation polynoms can be of any degree `n` defined by the length of the
 given vector with the first value being the coefficient of the `x^n` term. The
@@ -77,7 +77,7 @@ approx::assert_abs_diff_eq!(spline.eval(2.2).expect("covered by extrapolation po
 The spline can be differentiated by an arbitrary degree at any position `x`
 using the [`derivative`] method.
 
-![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_2.svg "Polynom-based extrapolation derivative")
+![]({{extrap_2.svg}} "Polynom-based extrapolation derivative")
 
 ```rust
 use akima_spline::AkimaSpline;
@@ -165,7 +165,7 @@ approx::assert_abs_diff_eq!(spline.derivative(2.0, 1).unwrap(), 0.0, epsilon=1e-
 approx::assert_abs_diff_eq!(spline.derivative(2.0 + 1e-6, 1).unwrap(), 0.0, epsilon=1e-3); // Inside spline
 ```
 
-The full documentation is available at <https://docs.rs/akima_spline/0.1.2>.
+The full documentation is available at <https://docs.rs/akima_spline/{{VERSION}}>.
 
 # Serialization and deserialization
 
@@ -188,7 +188,7 @@ scientific computing, including Akima spline interpolation.
 # Documentation
 
 The full API documentation is available at
-[https://docs.rs/akima_spline/0.1.2/akima_spline/](https://docs.rs/akima_spline/0.1.2/akima_spline/).
+[https://docs.rs/akima_spline/{{VERSION}}/akima_spline/](https://docs.rs/akima_spline/{{VERSION}}/akima_spline/).
 
 The doc images are created by a second crate `docs/create_doc_images` which uses
 this crate and the awesome [plotters](https://crates.io/crates/plotters) crate.
