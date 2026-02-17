@@ -20,7 +20,7 @@ fn main() {
     local = local.replace("{{extrap_2.svg}}", "docs/extrap_2.svg");
     std::fs::write("README_local.md", local).unwrap();
 
-    // Generate README,md using online hosted images
+    // Generate README.md using online hosted images
     let mut docsrs = readme.replace(
         "{{no_extrap.svg}}",
         "https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/no_extrap.svg",
