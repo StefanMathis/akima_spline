@@ -1,5 +1,51 @@
-#![cfg_attr(docsrs, doc = include_str!("../README.md"))]
-#![cfg_attr(not(docsrs), doc = include_str!("../README_local.md"))]
+/*!
+[`AkimaSpline`]: crate::AkimaSpline
+[`derivative`]: crate::AkimaSpline::derivative
+[crate_index]: crate
+ */
+#![doc = include_str!("../docs/readme_parts/no_extrap.svg.md")]
+#![doc = r#"
+
+![Spline without extrapolation][no_extrap]
+
+"#]
+#![cfg_attr(feature = "doc-images",
+cfg_attr(all(),
+doc = ::embed_doc_image::embed_image!("no_extrap", "docs/img/no_extrap.svg"),
+))]
+#![cfg_attr(
+    not(feature = "doc-images"),
+    doc = "**Doc images not enabled**. Compile docs with `cargo doc --features 'doc-images'` and Rust version >= 1.54."
+)]
+#![doc = include_str!("../docs/readme_parts/extrap_1.svg.md")]
+#![doc = r#"
+
+![Spline with extrapolation (example 1)][extrap_1]
+
+"#]
+#![cfg_attr(feature = "doc-images",
+cfg_attr(all(),
+doc = ::embed_doc_image::embed_image!("extrap_1", "docs/img/extrap_1.svg"),
+))]
+#![cfg_attr(
+    not(feature = "doc-images"),
+    doc = "**Doc images not enabled**. Compile docs with `cargo doc --features 'doc-images'` and Rust version >= 1.54."
+)]
+#![doc = include_str!("../docs/readme_parts/extrap_2.svg.md")]
+#![doc = r#"
+
+![Spline with extrapolation (example 2)][extrap_2]
+
+"#]
+#![cfg_attr(feature = "doc-images",
+cfg_attr(all(),
+doc = ::embed_doc_image::embed_image!("extrap_2", "docs/img/extrap_2.svg"),
+))]
+#![cfg_attr(
+    not(feature = "doc-images"),
+    doc = "**Doc images not enabled**. Compile docs with `cargo doc --features 'doc-images'` and Rust version >= 1.54."
+)]
+#![doc = include_str!("../docs/readme_parts/end.md")]
 #![deny(missing_docs)]
 
 use horner::eval_polynomial;
@@ -184,8 +230,8 @@ impl AkimaSpline {
             let m3 = ms_slice[2];
             let m4 = ms_slice[3];
 
-            // As described in Akima's paper, p.591 (parentheses block), this is an arbitrary
-            // convention to guarantee uniqueness of the solution
+            // As described in Akima's paper, p.591 (parentheses block), this is an
+            // arbitrary convention to guarantee uniqueness of the solution
             if m1 == m2 && m3 == m4 {
                 *elem = (m2 + m3) / 2.0;
             } else {
@@ -363,7 +409,8 @@ impl AkimaSpline {
                         });
                     }
                 }
-            // x is the last datapoint -> simply return the corresponding y-value
+            // x is the last datapoint -> simply return the corresponding
+            // y-value
             } else {
                 // SAFETY: ys is guaranteed to contain at least one value by the constructor
                 return EvalResult::Value(unsafe { *self.ys.get_unchecked(self.ys.len() - 1) });
@@ -540,7 +587,8 @@ fn extrapolate(xs: [f64; 3], ys: [f64; 3], extrap: &mut Option<Vec<f64>>) -> (f6
     let [x1, x2, x3] = xs;
     let [y1, y2, y3] = ys;
 
-    // Extrapolate the x-coordinates of two additional datapoints with (8) from Akima's paper
+    // Extrapolate the x-coordinates of two additional datapoints with (8) from
+    // Akima's paper
     let x4 = x3 - x1 + x2;
     let x5 = x3 - x1 + x3;
 

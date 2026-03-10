@@ -1,8 +1,9 @@
 akima_spline
 ============
 
-[`AkimaSpline`]: https://docs.rs/akima_spline/0.1.5/akima_spline/struct.AkimaSpline.html
-[`derivative`]: https://docs.rs/akima_spline/0.1.5/akima_spline/struct.AkimaSpline.html#method.derivative
+[`AkimaSpline`]: https://docs.rs/akima_spline/0.1.6/akima_spline/struct.AkimaSpline.html
+[`derivative`]: https://docs.rs/akima_spline/0.1.6/akima_spline/struct.AkimaSpline.html#method.derivative
+[crate_index]: https://docs.rs/akima_spline/0.1.6/akima_spline/
 
 A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
 spline with optional smooth extrapolation and derivative calculation.
@@ -11,7 +12,7 @@ spline with optional smooth extrapolation and derivative calculation.
 > Found a bug, missing docs, or have a feature request?  
 > Please open an issue on GitHub.
 
-![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/no_extrap.svg "Akima spline interpolation")
+![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/no_extrap.svg "Spline without extrapolation")
 
 This crate implements a 1d Akima spline as described in:
 > Akima, Hiroshi: A new method of interpolation and smooth curve fitting based on
@@ -48,7 +49,7 @@ at the transition point), the polynoms within the spline are adjusted. This can
 be clearly seen when comparing splines made from the same datapoints with and
 without extrapolation:
 
-![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_1.svg "Polynom-based extrapolation")
+![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/extrap_1.svg "Spline with extrapolation (example 1)")
 
 The extrapolation polynoms can be of any degree `n` defined by the length of the
 given vector with the first value being the coefficient of the `x^n` term. The
@@ -81,7 +82,7 @@ approx::assert_abs_diff_eq!(spline.eval(2.2).expect("covered by extrapolation po
 The spline can be differentiated by an arbitrary degree at any position `x`
 using the [`derivative`] method.
 
-![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_2.svg "Polynom-based extrapolation derivative")
+![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/extrap_2.svg "Spline with extrapolation (example 2)")
 
 ```rust
 use akima_spline::AkimaSpline;
@@ -129,8 +130,6 @@ approx::assert_abs_diff_eq!(spline.derivative(2.0 - 1e-6, 1).unwrap(), -6.0, eps
 approx::assert_abs_diff_eq!(spline.derivative(2.0, 1).unwrap(), -6.0, epsilon=1e-3); // Transition point
 approx::assert_abs_diff_eq!(spline.derivative(2.0 + 1e-6, 1).unwrap(), -6.0, epsilon=1e-3); // Outside spline
 ```
-
-
 It is of course possible to extrapolate only on one side of the spline. One
 should note that specifying an empty extrapolation term vector is NOT equal to
 `None`, since the derivative condition is still enforced (in that case, the
@@ -169,8 +168,6 @@ approx::assert_abs_diff_eq!(spline.derivative(2.0, 1).unwrap(), 0.0, epsilon=1e-
 approx::assert_abs_diff_eq!(spline.derivative(2.0 + 1e-6, 1).unwrap(), 0.0, epsilon=1e-3); // Inside spline
 ```
 
-The full documentation is available at <https://docs.rs/akima_spline/0.1.5>.
-
 # Serialization and deserialization
 
 The [`AkimaSpline`] struct can be serialized / deserialized if the `serde`
@@ -191,10 +188,12 @@ scientific computing, including Akima spline interpolation.
 
 # Documentation
 
-The full API documentation is available at
-[https://docs.rs/akima_spline/0.1.5/akima_spline/](https://docs.rs/akima_spline/0.1.5/akima_spline/).
+When building the documentation, it is recommended to enable all features with
+`cargo doc --all-features`; otherwise the generated documentation will not have
+any images and will miss the items hidden behind feature flags.
 
-The doc images are created by a second crate `docs/create_doc_images` which uses
-this crate and the awesome [plotters](https://crates.io/crates/plotters) crate.
+The doc images are created by a second crate located within its repository 
+(`docs/create_doc_images`) which uses this crate and the awesome
+[plotters](https://crates.io/crates/plotters) crate.
 The images shown in this documentation can be created with `cargo run` from
 within `docs/create_doc_images`.

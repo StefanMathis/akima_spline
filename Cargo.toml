@@ -1,6 +1,6 @@
 [package]
 name = "akima_spline"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2024"
 description = "A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima spline with optional smooth extrapolation and derivative calculation"
 readme = "README.md"
@@ -10,10 +10,12 @@ repository = "https://github.com/StefanMathis/akima_spline.git"
 [dependencies]
 horner = "0.1.2"
 serde = { version = "1", features = ["derive", "rc"], optional = true }
+embed-doc-image = { version = "0.1.4", optional = true }
 
 [features]
 default = []
 serde = ["dep:serde"]
+doc-images = ["dep:embed-doc-image"]
 
 [dev-dependencies]
 approx = { package = "approxim", version = "0.6" }
@@ -22,5 +24,5 @@ serde_yaml = {version = "0.8"}
 indoc = "1.0"
 
 [package.metadata.docs.rs]
-features = ["serde"]
+features = ["serde", "doc-images"]
 rustdoc-args = ["--cfg", "docsrs"]

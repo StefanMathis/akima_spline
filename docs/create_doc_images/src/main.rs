@@ -84,8 +84,8 @@ fn draw_no_extrap(
         x += resolution;
     }
 
-    let file_path =
-        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(&format!("../{filename}.svg"));
+    let file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join(&format!("../img/{filename}.svg"));
     let root = SVGBackend::new(&file_path, size).into_drawing_area();
 
     root.fill(&WHITE)?;
@@ -192,8 +192,8 @@ fn draw_extrap(
         x += resolution;
     }
 
-    let file_path =
-        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(&format!("../{filename}.svg"));
+    let file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join(&format!("../img/{filename}.svg"));
     let root = SVGBackend::new(&file_path, size).into_drawing_area();
 
     root.fill(&WHITE)?;

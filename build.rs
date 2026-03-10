@@ -1,31 +1,42 @@
+use std::fs;
+
 fn main() {
-    // If building for docs.rs, DO NOT create the README files from the template
-    if let Ok(env) = std::env::var("DOCS_RS") {
-        if &env == "1" {
-            return ();
-        }
+    // Skip README generation on docs.rs
+    if std::env::var("DOCS_RS").as_deref() == Ok("1") {
+        return;
     }
 
-    let mut readme = std::fs::read_to_string("README.template.md").unwrap();
-    readme = readme.replace(
+    /*
+    Compose README.md from the building blocks in docs/readme_parts,
+    interleaving image links in between. Finally, all {{VERSION}} placeholders
+    are replaced by the actual version read from Cargo.toml.
+     */
+
+    let mut readme =
+        fs::read_to_string("docs/readme_parts/links.md").expect("Failed to read template");
+    readme.push('\n');
+    readme.push_str(
+        &fs::read_to_string("docs/readme_parts/no_extrap.svg.md").expect("Failed to read template"),
+    );
+    readme.push_str("\n\n![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/no_extrap.svg \"Spline without extrapolation\")\n\n");
+
+    readme.push_str(
+        &fs::read_to_string("docs/readme_parts/extrap_1.svg.md").expect("Failed to read template"),
+    );
+    readme.push_str("\n\n![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/extrap_1.svg \"Spline with extrapolation (example 1)\")\n\n");
+
+    readme.push_str(
+        &fs::read_to_string("docs/readme_parts/extrap_2.svg.md").expect("Failed to read template"),
+    );
+    readme.push_str("\n\n![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/extrap_2.svg \"Spline with extrapolation (example 2)\")\n\n");
+
+    readme.push_str(
+        &fs::read_to_string("docs/readme_parts/end.md").expect("Failed to read template"),
+    );
+
+    let readme = readme.replace(
         "{{VERSION}}",
-        std::env::var("CARGO_PKG_VERSION")
-            .expect("version is available in build.rs")
-            .as_str(),
+        &std::env::var("CARGO_PKG_VERSION").expect("version is available in build.rs"),
     );
-
-    // Generate README_local.md using local images
-    let mut local = readme.replace("{{no_extrap.svg}}", "docs/no_extrap.svg");
-    local = local.replace("{{extrap_1.svg}}", "docs/extrap_1.svg");
-    local = local.replace("{{extrap_2.svg}}", "docs/extrap_2.svg");
-    std::fs::write("README_local.md", local).unwrap();
-
-    // Generate README.md using online hosted images
-    let mut docsrs = readme.replace(
-        "{{no_extrap.svg}}",
-        "https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/no_extrap.svg",
-    );
-    docsrs = docsrs.replace("{{extrap_1.svg}}", "https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_1.svg");
-    docsrs = docsrs.replace("{{extrap_2.svg}}", "https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/extrap_2.svg");
-    std::fs::write("README.md", docsrs).unwrap();
+    let _ = fs::write("README.md", readme);
 }
