@@ -18,17 +18,17 @@ fn main() {
     readme.push_str(
         &fs::read_to_string("docs/readme_parts/no_extrap.svg.md").expect("Failed to read template"),
     );
-    readme.push_str("\n\n![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/no_extrap.svg \"Spline without extrapolation\")\n\n");
+    readme.push_str("\n\n![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/no_extrap.svg \"Spline without extrapolation\")\n\n");
 
     readme.push_str(
         &fs::read_to_string("docs/readme_parts/extrap_1.svg.md").expect("Failed to read template"),
     );
-    readme.push_str("\n\n![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/extrap_1.svg \"Spline with extrapolation (example 1)\")\n\n");
+    readme.push_str("\n\n![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/extrap_1.svg \"Spline with extrapolation (example 1)\")\n\n");
 
     readme.push_str(
         &fs::read_to_string("docs/readme_parts/extrap_2.svg.md").expect("Failed to read template"),
     );
-    readme.push_str("\n\n![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/extrap_2.svg \"Spline with extrapolation (example 2)\")\n\n");
+    readme.push_str("\n\n![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/extrap_2.svg \"Spline with extrapolation (example 2)\")\n\n");
 
     readme.push_str(
         &fs::read_to_string("docs/readme_parts/end.md").expect("Failed to read template"),

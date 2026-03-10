@@ -1,9 +1,9 @@
 akima_spline
 ============
 
-[`AkimaSpline`]: https://docs.rs/akima_spline/0.1.6/akima_spline/struct.AkimaSpline.html
-[`derivative`]: https://docs.rs/akima_spline/0.1.6/akima_spline/struct.AkimaSpline.html#method.derivative
-[crate_index]: https://docs.rs/akima_spline/0.1.6/akima_spline/
+[`AkimaSpline`]: https://docs.rs/akima_spline/0.1.7/akima_spline/struct.AkimaSpline.html
+[`derivative`]: https://docs.rs/akima_spline/0.1.7/akima_spline/struct.AkimaSpline.html#method.derivative
+[crate_index]: https://docs.rs/akima_spline/0.1.7/akima_spline/
 
 A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
 spline with optional smooth extrapolation and derivative calculation.
@@ -12,7 +12,7 @@ spline with optional smooth extrapolation and derivative calculation.
 > Found a bug, missing docs, or have a feature request?  
 > Please open an issue on GitHub.
 
-![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/no_extrap.svg "Spline without extrapolation")
+![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/no_extrap.svg "Spline without extrapolation")
 
 This crate implements a 1d Akima spline as described in:
 > Akima, Hiroshi: A new method of interpolation and smooth curve fitting based on
@@ -49,7 +49,7 @@ at the transition point), the polynoms within the spline are adjusted. This can
 be clearly seen when comparing splines made from the same datapoints with and
 without extrapolation:
 
-![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/extrap_1.svg "Spline with extrapolation (example 1)")
+![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/extrap_1.svg "Spline with extrapolation (example 1)")
 
 The extrapolation polynoms can be of any degree `n` defined by the length of the
 given vector with the first value being the coefficient of the `x^n` term. The
@@ -82,7 +82,7 @@ approx::assert_abs_diff_eq!(spline.eval(2.2).expect("covered by extrapolation po
 The spline can be differentiated by an arbitrary degree at any position `x`
 using the [`derivative`] method.
 
-![](https://raw.githubusercontent.com/StefanMathis/planar_geo/refs/heads/main/docs/img/extrap_2.svg "Spline with extrapolation (example 2)")
+![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/extrap_2.svg "Spline with extrapolation (example 2)")
 
 ```rust
 use akima_spline::AkimaSpline;
