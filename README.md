@@ -5,8 +5,12 @@ akima_spline
 [`derivative`]: https://docs.rs/akima_spline/0.1.7/akima_spline/struct.AkimaSpline.html#method.derivative
 [crate_index]: https://docs.rs/akima_spline/0.1.7/akima_spline/
 
+[![Documentation](https://docs.rs/akima_spline/badge.svg)](https://docs.rs/akima_spline)
+
 A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
 spline with optional smooth extrapolation and derivative calculation.
+
+The full API documentation is available at https://docs.rs/akima_spline/0.1.7/akima_spline.
 
 > **Feedback welcome!**  
 > Found a bug, missing docs, or have a feature request?  
@@ -187,6 +191,9 @@ besides various other algorithms.
 scientific computing, including Akima spline interpolation.
 
 # Documentation
+
+The full API documentation can be found on crates.io:
+[https://crates.io/crates/akima_spline]
 
 When building the documentation, it is recommended to enable all features with
 `cargo doc --all-features`; otherwise the generated documentation will not have

@@ -2,6 +2,10 @@
 [`AkimaSpline`]: crate::AkimaSpline
 [`derivative`]: crate::AkimaSpline::derivative
 [crate_index]: crate
+
+A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
+spline with optional smooth extrapolation and derivative calculation.
+
  */
 #![doc = include_str!("../docs/readme_parts/no_extrap.svg.md")]
 #![doc = r#"

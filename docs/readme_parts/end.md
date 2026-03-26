@@ -102,6 +102,9 @@ scientific computing, including Akima spline interpolation.
 
 # Documentation
 
+The full API documentation can be found on crates.io:
+[https://crates.io/crates/akima_spline]
+
 When building the documentation, it is recommended to enable all features with
 `cargo doc --all-features`; otherwise the generated documentation will not have
 any images and will miss the items hidden behind feature flags.
