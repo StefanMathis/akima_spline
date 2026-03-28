@@ -4,6 +4,9 @@ akima_spline
 [`AkimaSpline`]: https://docs.rs/akima_spline/0.1.7/akima_spline/struct.AkimaSpline.html
 [`derivative`]: https://docs.rs/akima_spline/0.1.7/akima_spline/struct.AkimaSpline.html#method.derivative
 [crate_index]: https://docs.rs/akima_spline/0.1.7/akima_spline/
+[no_extrap.svg]: https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/no_extrap.svg
+[extrap_1.svg]: https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/extrap_1.svg
+[extrap_2.svg]: https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/extrap_2.svg
 
 [![Documentation](https://docs.rs/akima_spline/badge.svg)](https://docs.rs/akima_spline)
 
@@ -11,12 +14,11 @@ A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
 spline with optional smooth extrapolation and derivative calculation.
 
 The full API documentation is available at https://docs.rs/akima_spline/0.1.7/akima_spline.
-
 > **Feedback welcome!**  
 > Found a bug, missing docs, or have a feature request?  
 > Please open an issue on GitHub.
 
-![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/no_extrap.svg "Spline without extrapolation")
+![Spline without extrapolation][no_extrap.svg]
 
 This crate implements a 1d Akima spline as described in:
 > Akima, Hiroshi: A new method of interpolation and smooth curve fitting based on
@@ -53,7 +55,7 @@ at the transition point), the polynoms within the spline are adjusted. This can
 be clearly seen when comparing splines made from the same datapoints with and
 without extrapolation:
 
-![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/extrap_1.svg "Spline with extrapolation (example 1)")
+![Spline with extrapolation (example 1)][extrap_1.svg]
 
 The extrapolation polynoms can be of any degree `n` defined by the length of the
 given vector with the first value being the coefficient of the `x^n` term. The
@@ -86,7 +88,7 @@ approx::assert_abs_diff_eq!(spline.eval(2.2).expect("covered by extrapolation po
 The spline can be differentiated by an arbitrary degree at any position `x`
 using the [`derivative`] method.
 
-![](https://raw.githubusercontent.com/StefanMathis/akima_spline/refs/heads/main/docs/img/extrap_2.svg "Spline with extrapolation (example 2)")
+![Spline with extrapolation (example 2)][extrap_2.svg]
 
 ```rust
 use akima_spline::AkimaSpline;
@@ -191,9 +193,6 @@ besides various other algorithms.
 scientific computing, including Akima spline interpolation.
 
 # Documentation
-
-The full API documentation can be found on crates.io:
-[https://crates.io/crates/akima_spline]
 
 When building the documentation, it is recommended to enable all features with
 `cargo doc --all-features`; otherwise the generated documentation will not have

@@ -7,49 +7,17 @@ A lightweight (only one dependency with 18 SLoC) implementation of a 1d Akima
 spline with optional smooth extrapolation and derivative calculation.
 
  */
-#![doc = include_str!("../docs/readme_parts/no_extrap.svg.md")]
-#![doc = r#"
-
-![Spline without extrapolation][no_extrap]
-
-"#]
 #![cfg_attr(feature = "doc-images",
 cfg_attr(all(),
-doc = ::embed_doc_image::embed_image!("no_extrap", "docs/img/no_extrap.svg"),
+doc = ::embed_doc_image::embed_image!("no_extrap.svg", "docs/img/no_extrap.svg"),
+doc = ::embed_doc_image::embed_image!("extrap_1.svg", "docs/img/extrap_1.svg"),
+doc = ::embed_doc_image::embed_image!("extrap_2.svg", "docs/img/extrap_2.svg"),
 ))]
 #![cfg_attr(
     not(feature = "doc-images"),
     doc = "**Doc images not enabled**. Compile docs with `cargo doc --features 'doc-images'` and Rust version >= 1.54."
 )]
-#![doc = include_str!("../docs/readme_parts/extrap_1.svg.md")]
-#![doc = r#"
-
-![Spline with extrapolation (example 1)][extrap_1]
-
-"#]
-#![cfg_attr(feature = "doc-images",
-cfg_attr(all(),
-doc = ::embed_doc_image::embed_image!("extrap_1", "docs/img/extrap_1.svg"),
-))]
-#![cfg_attr(
-    not(feature = "doc-images"),
-    doc = "**Doc images not enabled**. Compile docs with `cargo doc --features 'doc-images'` and Rust version >= 1.54."
-)]
-#![doc = include_str!("../docs/readme_parts/extrap_2.svg.md")]
-#![doc = r#"
-
-![Spline with extrapolation (example 2)][extrap_2]
-
-"#]
-#![cfg_attr(feature = "doc-images",
-cfg_attr(all(),
-doc = ::embed_doc_image::embed_image!("extrap_2", "docs/img/extrap_2.svg"),
-))]
-#![cfg_attr(
-    not(feature = "doc-images"),
-    doc = "**Doc images not enabled**. Compile docs with `cargo doc --features 'doc-images'` and Rust version >= 1.54."
-)]
-#![doc = include_str!("../docs/readme_parts/end.md")]
+#![doc = include_str!("../docs/main.md")]
 #![deny(missing_docs)]
 
 use horner::eval_polynomial;
