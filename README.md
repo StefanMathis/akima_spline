@@ -1,6 +1,10 @@
 akima_spline
 ============
 
+<!-- This file has ben generated with build.rs by concatenating docs/links.md,
+docs/main.md and (if available docs/end.md). Do not modify this file, instead
+modify the components. -->
+
 [`AkimaSpline`]: https://docs.rs/akima_spline/0.1.7/akima_spline/struct.AkimaSpline.html
 [`derivative`]: https://docs.rs/akima_spline/0.1.7/akima_spline/struct.AkimaSpline.html#method.derivative
 [crate_index]: https://docs.rs/akima_spline/0.1.7/akima_spline/
@@ -16,7 +20,7 @@ spline with optional smooth extrapolation and derivative calculation.
 The full API documentation is available at https://docs.rs/akima_spline/0.1.7/akima_spline.
 > **Feedback welcome!**  
 > Found a bug, missing docs, or have a feature request?  
-> Please open an issue on GitHub.
+> Please open an issue on [GitHub](https://github.com/StefanMathis/akima_spline.git).
 
 ![Spline without extrapolation][no_extrap.svg]
 
